@@ -27,6 +27,7 @@ type DragMode =
       kind: 'keys'
       sx: number
       sy: number
+      started: boolean
       snapshot: Record<string, Keyframe[]> // pre-drag keys per track
     }
   | {
@@ -36,6 +37,8 @@ type DragMode =
       side: 'in' | 'out'
       sx: number
       sy: number
+      started: boolean
+      baked: boolean
       startKeys: Keyframe[] // immutable pre-drag snapshot
       startDt: number // dragged handle's dt at drag start
       startDv: number // dragged handle's dv at drag start
@@ -618,19 +621,18 @@ export default function CurveEditor() {
     }
 
     if (hit.type === 'handle' && hit.track && hit.key) {
-      // bake auto → bezier on grab
       const tr = hit.track
       const idx = tr.keys.findIndex((x) => x.id === hit.key!.id)
       let keys = tr.keys
+      let baked = false
       if (tr.keys[idx].interp === 'auto') {
+        baked = true
         keys = tr.keys.map((kk, i) => {
           if (i !== idx) return kk
           const a = autoHandles(tr.keys[i - 1], kk, tr.keys[i + 1])
           return { ...kk, interp: 'bezier' as const, hi: a.hi, ho: a.ho }
         })
       }
-      actions.commit()
-      actions.setKeysLive(tr.id, keys)
       const startHandle = hit.side === 'in' ? keys[idx].hi : keys[idx].ho
       drag = {
         kind: 'handle',
@@ -639,6 +641,8 @@ export default function CurveEditor() {
         side: hit.side!,
         sx: mx,
         sy: my,
+        started: false,
+        baked,
         startKeys: keys,
         startDt: startHandle?.dt ?? 0,
         startDv: startHandle?.dv ?? 0,
@@ -668,8 +672,7 @@ export default function CurveEditor() {
       ghost = Object.fromEntries(
         Object.entries(snapshot).map(([tid, ks]) => [tid, ks.map((x) => ({ ...x }))])
       )
-      actions.commit()
-      drag = { kind: 'keys', sx: mx, sy: my, snapshot }
+      drag = { kind: 'keys', sx: mx, sy: my, started: false, snapshot }
       ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
       return
     }
@@ -727,6 +730,10 @@ export default function CurveEditor() {
         break
       }
       case 'keys': {
+        if (!drag.started) {
+          drag.started = true
+          actions.commit()
+        }
         const dt = (mx - drag.sx) / view.pxPerSec
         const dv = (my - drag.sy) / view.pxPerVal
         const { project, selection } = s
@@ -764,6 +771,11 @@ export default function CurveEditor() {
       }
       case 'handle': {
         const d = drag // narrowed const alias — closures can't narrow a mutable let
+        if (!d.started) {
+          d.started = true
+          actions.commit()
+          if (d.baked) actions.setKeysLive(d.trackId, d.startKeys)
+        }
         const dx = mx - d.sx
         const dy = my - d.sy
         const tr = s.project.tracks.find((t) => t.id === d.trackId)
