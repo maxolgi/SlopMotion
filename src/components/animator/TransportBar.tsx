@@ -1,5 +1,6 @@
 import { onCleanup, onMount, createSignal } from 'solid-js'
 import { engine } from '@/lib/animation/engine'
+import { getState } from '@/store/useAnimator'
 
 // ─── Transport bar: drives the engine rAF + transport controls ────────────────
 
@@ -14,8 +15,9 @@ export default function TransportBar() {
     let raf = 0
     const frame = () => {
       engine.tick()
+      const fps = getState().project.fps || 30
       if (timeRef) timeRef.textContent = engine.time.toFixed(2)
-      if (frameRef) frameRef.textContent = `f${Math.floor(engine.time * 30)}`
+      if (frameRef) frameRef.textContent = `f${Math.floor(engine.time * fps)}`
       raf = requestAnimationFrame(frame)
     }
     raf = requestAnimationFrame(frame)
