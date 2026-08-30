@@ -70,6 +70,9 @@ export default function Inspector() {
     onCleanup(() => window.clearInterval(id))
   })
 
+  let pulseTimer: number | undefined
+  onCleanup(() => window.clearTimeout(pulseTimer))
+
   return (
     <div class="flex h-full min-h-0 flex-col">
       {/* tabs */}
@@ -477,12 +480,13 @@ export default function Inspector() {
             </label>
             <button
               class="w-full rounded border border-cyan-400/40 bg-cyan-400/10 py-1.5 text-[11px] text-cyan-300 hover:bg-cyan-400/20"
-              onClick={() =>
-                void engine.sendImmediate([
-                  { address: '/ch/1', args: [{ type: 'f', value: 0 }] },
-                  { address: '/ch/1', args: [{ type: 'f', value: 1 }] },
-                ])
-              }
+              onClick={() => {
+                void engine.sendImmediate([{ address: '/ch/1', args: [{ type: 'f', value: 1 }] }])
+                pulseTimer = window.setTimeout(
+                  () => void engine.sendImmediate([{ address: '/ch/1', args: [{ type: 'f', value: 0 }] }]),
+                  300
+                )
+              }}
             >
               Send test pulse /ch/1
             </button>
