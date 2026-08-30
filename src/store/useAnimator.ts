@@ -139,7 +139,7 @@ const addTrack = () =>
   mutate((p) => {
     const n = p.tracks.length + 1
     const usedCh = new Set(
-      p.tracks.filter((t) => t.target.kind === 'ch').map((t) => (t.target as { n: number }).n)
+      p.tracks.flatMap((t) => /\/ch\/(\d+)/.exec(t.target)?.[1] ?? []).map(Number)
     )
     let chn = n
     while (usedCh.has(chn)) chn++
@@ -149,7 +149,7 @@ const addTrack = () =>
       color: ['#22d3ee', '#e879f9', '#fbbf24', '#34d399', '#a78bfa', '#fb7185', '#a3e635', '#fb923c'][(n - 1) % 8],
       muted: false,
       send: true,
-      target: { kind: 'ch', n: chn },
+      target: `/ch/${chn}`,
       min: 0,
       max: 1,
       keys: [
@@ -178,7 +178,9 @@ const duplicateTrack = (id: string) =>
     const copy = clone(src)
     copy.id = uid('tr')
     copy.name = `${src.name} copy`
-    if (copy.target.kind === 'ch') copy.target.n = Math.min(64, copy.target.n + 1)
+    const m = /\/ch\/(\d+)/.exec(copy.target)
+    const chn = m ? Number(m[1]) : null
+    if (chn !== null && chn < 64) copy.target = `/ch/${chn + 1}`
     copy.keys = copy.keys.map((kk) => ({ ...kk, id: uid('k') }))
     p.tracks.push(copy)
   })

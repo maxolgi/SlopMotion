@@ -29,7 +29,7 @@ export function mkTrack(
     name,
     muted: false,
     send: true,
-    target: { kind: 'ch', n: ch },
+    target: `/ch/${ch}`,
     min: 0,
     max: 1,
     keys,

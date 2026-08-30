@@ -1,8 +1,7 @@
 'use client'
 
 import {
-  ccMessage,
-  chMessage,
+  addrMessage,
   fmtMessage,
   noteOff,
   noteOn,
@@ -224,8 +223,7 @@ class AnimationEngine {
 
   // ── OSC dispatch ───────────────────────────────────────────────────────────
   private trackMessage(track: Track, arg: number): OscMessage {
-    if (track.target.kind === 'cc') return ccMessage(track.target.ch, track.target.cc, arg * 127)
-    return chMessage(track.target.n, arg)
+    return addrMessage(track.target, arg)
   }
 
   /** Immediate direct send (knobs, XY pad, notes, learn pulses). */

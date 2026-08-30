@@ -49,10 +49,6 @@ export interface Env {
   amount: number
 }
 
-export type OscTarget =
-  | { kind: 'ch'; n: number } // /ch/{n} float 0..1
-  | { kind: 'cc'; ch: number; cc: number } // /cc int int int
-
 export interface Track {
   id: string
   name: string
@@ -60,7 +56,8 @@ export interface Track {
   muted: boolean
   /** include in OSC output */
   send: boolean
-  target: OscTarget
+  /** OSC address, e.g. '/ch/1' */
+  target: string
   /** logical output range mapped onto the OSC 0..1 arg */
   min: number
   max: number
