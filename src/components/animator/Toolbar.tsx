@@ -2,7 +2,7 @@ import { createSignal, onCleanup, onMount } from 'solid-js'
 import { store, getState, actions } from '@/store/useAnimator'
 import { engine } from '@/lib/animation/engine'
 import { demoProject } from '@/lib/animation/presets'
-import type { Project } from '@/lib/animation/types'
+import { normalizeProject } from '@/lib/animation/normalize'
 import TransportBar from './TransportBar'
 import {
   Download,
@@ -59,8 +59,8 @@ export default function Toolbar(props: {
       const file = input.files?.[0]
       if (!file) return
       try {
-        const p = JSON.parse(await file.text()) as Project
-        if (!Array.isArray(p.tracks)) throw new Error('not a SlopMotion project')
+        const p = normalizeProject(JSON.parse(await file.text()))
+        if (!p) throw new Error('not a SlopMotion project')
         actions.loadProject(p)
         toast.success(`Loaded “${p.name}”`)
       } catch (e) {

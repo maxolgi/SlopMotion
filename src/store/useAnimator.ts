@@ -3,6 +3,7 @@ import type { Keyframe, Project, Selection, Track } from '@/lib/animation/types'
 import { uid } from '@/lib/animation/types'
 import { applyEase, bakeHandles, evalCurve, sortKeys, EASE_PRESETS } from '@/lib/animation/curve'
 import { demoProject } from '@/lib/animation/presets'
+import { normalizeProject } from '@/lib/animation/normalize'
 import { engine } from '@/lib/animation/engine'
 
 const STORAGE_KEY = 'slopmotion.project.v1'
@@ -50,8 +51,8 @@ const hydrate = () => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
-      const p = JSON.parse(raw) as Project
-      if (p && Array.isArray(p.tracks)) setState('project', reconcile(p, { merge: true }))
+      const p = normalizeProject(JSON.parse(raw))
+      if (p) setState('project', reconcile(p, { merge: true }))
     }
   } catch {
     /* corrupted storage → keep demo */
