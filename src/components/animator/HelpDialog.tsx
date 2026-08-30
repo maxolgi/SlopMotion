@@ -30,7 +30,7 @@ const SHORTCUTS: [string, string][] = [
 ]
 
 const OSC_TABLE: [string, string, string][] = [
-  ['/ch/{n}', 'float', 'Generic continuous source — any address works; value spans the track min..max range'],
+  ['/ch/{n}', 'float', 'Generic continuous source — any address works; output spans track min..max, max = 0 sends absolute curve values'],
   ['/noteon', 'int ch, note, vel', 'Note-on into the voice/note system'],
   ['/noteoff', 'int ch, note', 'Note-off'],
 ]

@@ -58,7 +58,7 @@ export interface Track {
   send: boolean
   /** OSC address, e.g. '/ch/1' */
   target: string
-  /** output range: the curve's 0..1 output is scaled onto min..max and sent over OSC */
+  /** output range: curve output is scaled onto min..max and sent over OSC; max = 0 sends absolute curve values */
   min: number
   max: number
   keys: Keyframe[]

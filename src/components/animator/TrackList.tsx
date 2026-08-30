@@ -215,7 +215,11 @@ export default function TrackList() {
                           step={0.1}
                           class="w-full rounded border border-white/10 bg-black/40 px-2 py-1 font-mono text-[11px] outline-none"
                           value={tr.max}
-                          onInput={(e) => actions.setTrackProp(tr.id, { max: Number(e.currentTarget.value) || 1 })}
+                          title="Output max — 0 sends absolute curve values"
+                          onInput={(e) => {
+                            const v = e.currentTarget.value
+                            actions.setTrackProp(tr.id, { max: v === '' ? 1 : Number(v) })
+                          }}
                         />
                       </div>
                     </div>

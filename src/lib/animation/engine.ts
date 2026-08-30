@@ -176,12 +176,17 @@ class AnimationEngine {
     }
     const ev = this.envLevel(track, now)
     if (track.env.enabled && ev > 0) out = applyEnv(out, track.env, ev)
-    const span = track.max - track.min
-    const arg = clamp(
-      track.min + out * span,
-      Math.min(track.min, track.max),
-      Math.max(track.min, track.max)
-    )
+    let arg: number
+    if (track.max === 0) {
+      arg = out
+    } else {
+      const span = track.max - track.min
+      arg = clamp(
+        track.min + out * span,
+        Math.min(track.min, track.max),
+        Math.max(track.min, track.max)
+      )
+    }
     return { base: base0, final: out, arg }
   }
 
