@@ -1,4 +1,4 @@
-import { createEffect, createSignal, on, onCleanup, onMount, For, Show } from 'solid-js'
+import { createSignal, onCleanup, onMount, For, Show } from 'solid-js'
 import { store, actions } from '@/store/useAnimator'
 import { engine } from '@/lib/animation/engine'
 import type { Track } from '@/lib/animation/types'
@@ -17,25 +17,16 @@ import {
 
 // ─── Track list (left panel) ──────────────────────────────────────────────────
 
+const liveReadouts = new Map<HTMLSpanElement, string>()
+
 function LiveValue(props: { track: Track }) {
   let ref!: HTMLSpanElement
-  createEffect(
-    on(
-      () => props.track,
-      (tr) => {
-        let raf = 0
-        const loop = () => {
-          if (ref) {
-            const { arg } = engine.evalTrack(tr, engine.time)
-            ref.textContent = arg.toFixed(3)
-          }
-          raf = requestAnimationFrame(loop)
-        }
-        raf = requestAnimationFrame(loop)
-        onCleanup(() => cancelAnimationFrame(raf))
-      }
-    )
-  )
+  onMount(() => {
+    liveReadouts.set(ref, props.track.id)
+  })
+  onCleanup(() => {
+    liveReadouts.delete(ref)
+  })
   return (
     <span
       ref={ref}
@@ -55,7 +46,21 @@ export default function TrackList() {
   const [learning, setLearning] = createSignal<string | null>(null)
   onMount(() => {
     const id = window.setInterval(() => setLearning(engine.learning), 400)
-    onCleanup(() => window.clearInterval(id))
+    let raf = 0
+    const loop = () => {
+      for (const [span, trackId] of liveReadouts) {
+        const track = store.project.tracks.find((t) => t.id === trackId)
+        if (!track) continue
+        const { arg } = engine.evalTrack(track, engine.time)
+        span.textContent = arg.toFixed(3)
+      }
+      raf = requestAnimationFrame(loop)
+    }
+    raf = requestAnimationFrame(loop)
+    onCleanup(() => {
+      window.clearInterval(id)
+      cancelAnimationFrame(raf)
+    })
   })
   const [expanded, setExpanded] = createSignal<string | null>(null)
 
