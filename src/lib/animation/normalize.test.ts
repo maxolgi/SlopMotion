@@ -51,7 +51,7 @@ describe('normalizeProject', () => {
     expect(tr.color).toBe(TRACK_COLORS[0])
     expect(tr.muted).toBe(false)
     expect(tr.send).toBe(true)
-    expect(tr.target).toEqual({ kind: 'ch', n: 1 })
+    expect(tr.target).toBe('/ch/1')
     expect(tr.min).toBe(0)
     expect(tr.max).toBe(1)
     expect(tr.lfo).toEqual(defaultLfo())
@@ -66,6 +66,40 @@ describe('normalizeProject', () => {
     expect(tr.keys[0].id).not.toBe('dupe')
     expect(tr.keys[2].id).not.toBe('dupe')
     expect(new Set(tr.keys.map((k) => k.id)).size).toBe(3)
+  })
+
+  it('migrates legacy ch targets with clamped channel numbers', () => {
+    const mk = (target: unknown) => normalizeProject({ tracks: [{ target }] })!.tracks[0].target
+    expect(mk({ kind: 'ch', n: 7 })).toBe('/ch/7')
+    expect(mk({ kind: 'ch', n: 100 })).toBe('/ch/64')
+    expect(mk({ kind: 'ch', n: 0 })).toBe('/ch/1')
+    expect(mk({ kind: 'ch', n: 'x' })).toBe('/ch/1')
+    expect(mk({ kind: 'ch' })).toBe('/ch/1')
+  })
+
+  it('migrates legacy cc targets to address form', () => {
+    const mk = (target: unknown) => normalizeProject({ tracks: [{ target }] })!.tracks[0].target
+    expect(mk({ kind: 'cc', ch: 1, cc: 22 })).toBe('/cc/1/22')
+    expect(mk({ kind: 'cc', ch: -3, cc: 1.9 })).toBe('/cc/0/2')
+    expect(mk({ kind: 'cc', ch: 'x', cc: 22 })).toBe('/ch/1')
+    expect(mk({ kind: 'cc', ch: 1 })).toBe('/ch/1')
+  })
+
+  it('keeps string targets and prepends missing leading slash', () => {
+    const mk = (target: unknown) => normalizeProject({ tracks: [{ target }] })!.tracks[0].target
+    expect(mk('/mix/xyz')).toBe('/mix/xyz')
+    expect(mk('  /ch/3  ')).toBe('/ch/3')
+    expect(mk('ch/9')).toBe('/ch/9')
+  })
+
+  it('falls back to /ch/1 for empty or garbage targets', () => {
+    const mk = (target: unknown) => normalizeProject({ tracks: [{ target }] })!.tracks[0].target
+    expect(mk('')).toBe('/ch/1')
+    expect(mk('   ')).toBe('/ch/1')
+    expect(mk(42)).toBe('/ch/1')
+    expect(mk({ kind: 'nope' })).toBe('/ch/1')
+    expect(mk(null)).toBe('/ch/1')
+    expect(mk(undefined)).toBe('/ch/1')
   })
 
   it('clamps osc rate and falls back to default port', () => {

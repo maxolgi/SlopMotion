@@ -10,7 +10,6 @@ import type {
   LfoMode,
   LfoWave,
   OscSettings,
-  OscTarget,
   Project,
   Track,
 } from './types'
@@ -56,10 +55,16 @@ function normalizeKeys(raw: unknown): Keyframe[] {
   return out.sort((a, b) => a.t - b.t)
 }
 
-function normalizeTarget(raw: unknown): OscTarget {
-  if (isObj(raw) && raw.kind === 'ch' && isNum(raw.n)) return { kind: 'ch', n: Math.min(64, Math.max(1, raw.n)) }
-  if (isObj(raw) && raw.kind === 'cc' && isNum(raw.ch) && isNum(raw.cc)) return { kind: 'cc', ch: raw.ch, cc: raw.cc }
-  return { kind: 'ch', n: 1 }
+function normalizeTarget(raw: unknown): string {
+  if (typeof raw === 'string') {
+    const t = raw.trim()
+    if (t === '') return '/ch/1'
+    return t.startsWith('/') ? t : `/${t}`
+  }
+  if (isObj(raw) && raw.kind === 'ch' && isNum(raw.n)) return `/ch/${Math.min(64, Math.max(1, raw.n))}`
+  if (isObj(raw) && raw.kind === 'cc' && isNum(raw.ch) && isNum(raw.cc))
+    return `/cc/${Math.max(0, Math.round(raw.ch))}/${Math.max(0, Math.round(raw.cc))}`
+  return '/ch/1'
 }
 
 function normalizeLfo(raw: unknown): Lfo {
