@@ -26,9 +26,9 @@ pub struct Cli {
 
     #[arg(
         long,
-        help = "Do not auto-open the browser after the server starts"
+        help = "Open the web UI in the default browser after the server starts"
     )]
-    pub no_open: bool,
+    pub open: bool,
 
     #[arg(
         long,
@@ -60,12 +60,12 @@ async fn run_headless(cli: Cli) {
         cli.port,
     ));
 
-    // Open the browser only once the server is accepting connections; the
-    // polling and blocking `open` call run on a plain thread so the tokio
-    // runtime stays minimal (no "time" feature needed).
+    // Print readiness once the server is accepting connections; the polling
+    // runs on a plain thread so the tokio runtime stays minimal (no "time"
+    // feature needed). The browser is only opened when --open is passed.
     let port = cli.port;
     let bind = cli.bind.clone();
-    let no_open = cli.no_open;
+    let open_browser = cli.open;
     std::thread::spawn(move || {
         for _ in 0..50 {
             if std::net::TcpStream::connect((bind.as_str(), port)).is_ok() {
@@ -77,7 +77,7 @@ async fn run_headless(cli: Cli) {
         if let Ok(ip) = local_ip_address::local_ip() {
             println!("LAN:   http://{}:{port}", ip);
         }
-        if !no_open {
+        if open_browser {
             let url = format!("http://localhost:{port}");
             if let Err(e) = open::that(&url) {
                 eprintln!("Could not open browser: {e}");

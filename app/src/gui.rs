@@ -64,7 +64,7 @@ struct ControlPanel {
     bind: String,
     port: String,
     running: bool,
-    no_open: bool,
+    open: bool,
     shutdown_tx: Option<futures::channel::oneshot::Sender<()>>,
     server_error_rx: Option<std::sync::mpsc::Receiver<String>>,
     url: String,
@@ -84,7 +84,7 @@ impl ControlPanel {
                 .map(|c| c.port.clone())
                 .unwrap_or(cli.port.to_string()),
             running: false,
-            no_open: cli.no_open,
+            open: cli.open,
             shutdown_tx: None,
             server_error_rx: None,
             url: String::new(),
@@ -163,10 +163,11 @@ impl ControlPanel {
         };
         self.url = format!("http://{display_ip}:{port}");
 
-        // Open the browser only once the server is accepting connections; the
-        // polling and blocking `open` call run on a plain thread so the GUI
-        // and the tokio runtime stay unblocked.
-        if !self.no_open {
+        // Open the browser only when opted in via --open, and only once the
+        // server is accepting connections; the polling and blocking `open`
+        // call run on a plain thread so the GUI and the tokio runtime stay
+        // unblocked.
+        if self.open {
             let url = self.url.clone();
             let bind = bind_addr.clone();
             std::thread::spawn(move || {
