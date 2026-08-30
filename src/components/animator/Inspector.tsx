@@ -120,8 +120,7 @@ export default function Inspector() {
                   <div class="space-y-2 text-[11px] text-zinc-400">
                     <div class="font-medium text-zinc-200">{tr.name}</div>
                     <p class="text-zinc-500">
-                      {tr.keys.length} keys ·{' '}
-                      {tr.target.kind === 'ch' ? `/ch/${tr.target.n}` : `/cc`}
+                      {tr.keys.length} keys · {tr.target}
                     </p>
                     <div class="grid grid-cols-2 gap-2">
                       <button
@@ -360,9 +359,8 @@ export default function Inspector() {
                     />
                   </div>
                   <p class="text-[9px] leading-snug text-zinc-500">
-                    Dashed curve in the editor shows the modulated output. Bind{' '}
-                    {tr.target.kind === 'ch' ? `/ch/${tr.target.n}` : '/cc'} in your OSC software
-                    (learn mode).
+                    Dashed curve in the editor shows the modulated output. Bind {tr.target} in your
+                    OSC software (learn mode).
                   </p>
                 </>
               )}

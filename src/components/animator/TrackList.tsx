@@ -39,7 +39,7 @@ function LiveValue(props: { track: Track }) {
 }
 
 function addrLabel(t: Track): string {
-  return t.target.kind === 'ch' ? `/ch/${t.target.n}` : `/cc ${t.target.ch}/${t.target.cc}`
+  return t.target
 }
 
 export default function TrackList() {
@@ -186,60 +186,17 @@ export default function TrackList() {
                       onBlur={(e) => actions.setTrackProp(tr.id, { name: e.currentTarget.value })}
                     />
                     <label class="mb-1 block font-mono text-[9px] uppercase text-zinc-500">OSC target</label>
-                    <div class="mb-1 flex items-center gap-1">
-                      <select
-                        class="rounded border border-white/10 bg-black/40 px-1.5 py-1 text-[11px] outline-none"
-                        value={tr.target.kind}
-                        onChange={(e) => {
-                          if (e.currentTarget.value === 'ch') actions.setTrackProp(tr.id, { target: { kind: 'ch', n: 1 } })
-                          else actions.setTrackProp(tr.id, { target: { kind: 'cc', ch: 0, cc: 1 } })
-                        }}
-                      >
-                        <option value="ch">/ch/n</option>
-                        <option value="cc">/cc</option>
-                      </select>
-                      {tr.target.kind === 'ch' ? (
-                        <input
-                          type="number"
-                          min={1}
-                          max={64}
-                          class="w-16 rounded border border-white/10 bg-black/40 px-2 py-1 font-mono text-[11px] outline-none"
-                          value={tr.target.n}
-                          onInput={(e) =>
-                            actions.setTrackProp(tr.id, {
-                              target: { kind: 'ch', n: Math.max(1, Math.min(64, Number(e.currentTarget.value) || 1)) },
-                            })
-                          }
-                        />
-                      ) : (
-                        <>
-                          <input
-                            type="number"
-                            class="w-14 rounded border border-white/10 bg-black/40 px-2 py-1 font-mono text-[11px] outline-none"
-                            value={tr.target.ch}
-                            onInput={(e) =>
-                              actions.setTrackProp(tr.id, {
-                                target: { kind: 'cc', ch: Number(e.currentTarget.value) || 0, cc: tr.target.kind === 'cc' ? tr.target.cc : 1 },
-                              })
-                            }
-                          />
-                          <input
-                            type="number"
-                            class="w-14 rounded border border-white/10 bg-black/40 px-2 py-1 font-mono text-[11px] outline-none"
-                            value={tr.target.cc}
-                            onInput={(e) =>
-                              actions.setTrackProp(tr.id, {
-                                target: {
-                                  kind: 'cc',
-                                  ch: tr.target.kind === 'cc' ? tr.target.ch : 0,
-                                  cc: Number(e.currentTarget.value) || 0,
-                                },
-                              })
-                            }
-                          />
-                        </>
-                      )}
-                    </div>
+                    <input
+                      class="mb-2 w-full rounded border border-white/10 bg-black/40 px-2 py-1 font-mono text-[11px] outline-none focus:border-cyan-400/50"
+                      title="OSC address"
+                      value={tr.target}
+                      onBlur={(e) => {
+                        const target = e.currentTarget.value.trim()
+                        actions.setTrackProp(tr.id, {
+                          target: target ? (target.startsWith('/') ? target : `/${target}`) : '/ch/1',
+                        })
+                      }}
+                    />
                     <div class="mb-2 grid grid-cols-2 gap-2">
                       <div>
                         <label class="mb-1 block font-mono text-[9px] uppercase text-zinc-500">Range min</label>
