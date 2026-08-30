@@ -70,23 +70,8 @@ export function encodePacket(messages: OscMessage[], bundle: boolean): Uint8Arra
 
 // ─── Message helpers ──────────────────────────────────────────────────────────
 
-export function chMessage(n: number, v01: number): OscMessage {
-  return { address: `/ch/${Math.round(n)}`, args: [{ type: 'f', value: v01 }] }
-}
-
 export function addrMessage(addr: string, value: number): OscMessage {
   return { address: addr.startsWith('/') ? addr : `/${addr}`, args: [{ type: 'f', value }] }
-}
-
-export function ccMessage(ch: number, cc: number, val: number): OscMessage {
-  return {
-    address: '/cc',
-    args: [
-      { type: 'i', value: Math.round(ch) },
-      { type: 'i', value: Math.round(cc) },
-      { type: 'i', value: Math.max(0, Math.min(127, Math.round(val))) },
-    ],
-  }
 }
 
 export function noteOn(ch: number, note: number, vel: number): OscMessage {

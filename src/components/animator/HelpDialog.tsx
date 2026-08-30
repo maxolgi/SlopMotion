@@ -30,8 +30,7 @@ const SHORTCUTS: [string, string][] = [
 ]
 
 const OSC_TABLE: [string, string, string][] = [
-  ['/ch/{n}', 'float 0..1', 'Generic continuous source — main animation target'],
-  ['/cc', 'int ch, cc, val', 'MIDI CC (0–127)'],
+  ['/ch/{n}', 'float 0..1', 'Generic continuous source — any address works'],
   ['/noteon', 'int ch, note, vel', 'Note-on into the voice/note system'],
   ['/noteoff', 'int ch, note', 'Note-off'],
 ]
@@ -60,8 +59,8 @@ export default function HelpDialog(props: { open: boolean; onClose: () => void }
                 to the parameters you want to animate (code dials, transforms, brightness…).
               </li>
               <li>
-                Here: map each track to a <code class="font-mono">/ch/n</code> (track ▸ ⌄ ▸ OSC
-                target), or hit <b>Learn</b> to pulse an address while you bind it.
+                Here: set each track&apos;s OSC target address (track ▸ ⌄), or hit <b>Learn</b> to
+                pulse an address while you bind it.
               </li>
               <li>
                 Keyframe curves (bezier/auto/linear/stepped + ease presets), stack per-track LFOs

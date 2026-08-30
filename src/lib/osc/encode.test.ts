@@ -2,8 +2,6 @@ import { describe, expect, it } from 'vitest'
 import type { OscMessage } from './encode'
 import {
   addrMessage,
-  ccMessage,
-  chMessage,
   encodeBundle,
   encodeMessage,
   encodePacket,
@@ -58,7 +56,7 @@ describe('encodeMessage', () => {
 
 describe('encodeBundle', () => {
   it('writes #bundle, immediate timetag and length-prefixed messages', () => {
-    const m1 = chMessage(1, 0.5)
+    const m1 = addrMessage('/ch/1', 0.5)
     const m2: OscMessage = { address: '/n', args: [{ type: 'i', value: 1 }] }
     const e1 = encodeMessage(m1)
     const e2 = encodeMessage(m2)
@@ -74,7 +72,7 @@ describe('encodeBundle', () => {
 })
 
 describe('encodePacket', () => {
-  const m1 = chMessage(1, 0.5)
+  const m1 = addrMessage('/ch/1', 0.5)
   const m2 = addrMessage('/fx/x', 0.25)
 
   it('returns a single plain packet for one message even with bundle flag', () => {
@@ -104,22 +102,6 @@ describe('encodePacket', () => {
 })
 
 describe('message helpers', () => {
-  it('chMessage targets /ch/{n} with a float', () => {
-    const m = chMessage(3, 0.5)
-    expect(m.address).toBe('/ch/3')
-    expect(m.args).toEqual([{ type: 'f', value: 0.5 }])
-  })
-
-  it('ccMessage clamps the value into 0..127', () => {
-    const m = ccMessage(1, 74, 200)
-    expect(m.address).toBe('/cc')
-    expect(m.args).toEqual([
-      { type: 'i', value: 1 },
-      { type: 'i', value: 74 },
-      { type: 'i', value: 127 },
-    ])
-  })
-
   it('noteOn and noteOff target note addresses', () => {
     expect(noteOn(0, 60, 100).address).toBe('/noteon')
     expect(noteOff(0, 60).address).toBe('/noteoff')
@@ -130,6 +112,6 @@ describe('message helpers', () => {
   })
 
   it('fmtMessage renders address and 3-decimal values', () => {
-    expect(fmtMessage(chMessage(4, 0.7321))).toBe('/ch/4  0.732')
+    expect(fmtMessage(addrMessage('/ch/4', 0.7321))).toBe('/ch/4  0.732')
   })
 })
