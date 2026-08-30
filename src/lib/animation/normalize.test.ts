@@ -68,16 +68,19 @@ describe('normalizeProject', () => {
     expect(new Set(tr.keys.map((k) => k.id)).size).toBe(3)
   })
 
-  it('clamps osc rate and port', () => {
+  it('clamps osc rate and falls back to default port', () => {
     const hi = normalizeProject({ tracks: [], osc: { rate: 500, port: 70000 } })!.osc
     expect(hi.rate).toBe(120)
-    expect(hi.port).toBe(65535)
+    expect(hi.port).toBe(8101)
     const lo = normalizeProject({ tracks: [], osc: { rate: 1, port: 0 } })!.osc
     expect(lo.rate).toBe(10)
-    expect(lo.port).toBe(1)
+    expect(lo.port).toBe(8101)
     const bad = normalizeProject({ tracks: [], osc: { rate: 'x', port: 'y' } })!.osc
     expect(bad.rate).toBe(30)
     expect(bad.port).toBe(8101)
+    const ok = normalizeProject({ tracks: [], osc: { rate: 60, port: 9000 } })!.osc
+    expect(ok.rate).toBe(60)
+    expect(ok.port).toBe(9000)
   })
 
   it('falls back to duration 16 when below 1', () => {

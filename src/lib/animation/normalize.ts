@@ -171,7 +171,7 @@ function normalizeOsc(raw: unknown): OscSettings {
   const o: OscSettings = { host: '127.0.0.1', port: 8101, rate: 30, armed: true, live: false, bundle: false }
   if (!isObj(raw)) return o
   o.host = str(raw.host, o.host)
-  o.port = isNum(raw.port) ? Math.min(65535, Math.max(1, raw.port)) : o.port
+  o.port = isNum(raw.port) && raw.port >= 1 && raw.port <= 65535 ? raw.port : o.port
   o.rate = isNum(raw.rate) ? Math.min(120, Math.max(10, raw.rate)) : o.rate
   o.armed = bool(raw.armed, true)
   o.live = bool(raw.live, false)
