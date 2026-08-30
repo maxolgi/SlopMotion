@@ -72,24 +72,6 @@ export default function Toolbar(props: {
 
   return (
     <header class="flex flex-wrap items-center gap-2 border-b border-white/5 bg-[#101019] px-3 py-2">
-      {/* brand */}
-      <div class="mr-1 flex items-center gap-2">
-        <div
-          class="grid h-7 w-7 place-items-center rounded-md font-black text-black"
-          style={{ background: 'linear-gradient(135deg,#22d3ee,#e879f9)' }}
-        >
-          S
-        </div>
-        <div class="leading-none">
-          <div class="text-[13px] font-bold tracking-tight text-white">
-            SlopMotion
-          </div>
-          <div class="text-[8px] uppercase tracking-[0.2em] text-zinc-500">
-            OSC animator
-          </div>
-        </div>
-      </div>
-
       <TransportBar />
 
       {/* project fields */}
@@ -232,9 +214,9 @@ export default function Toolbar(props: {
             const p = demoProject()
             actions.loadProject(p)
             engine.seek(0)
-            toast('Loaded fresh SlopShady mapping template')
+            toast('Template loaded')
           }}
-          title="Load SlopShady template"
+          title="Load template"
         >
           <Zap size={13} />
         </button>
