@@ -360,8 +360,9 @@ export default function Inspector() {
                     />
                   </div>
                   <p class="text-[9px] leading-snug text-zinc-500">
-                    Dashed curve in the editor shows the modulated output. In SlopShady, bind{' '}
-                    {tr.target.kind === 'ch' ? `/ch/${tr.target.n}` : '/cc'} via OSC-Learn.
+                    Dashed curve in the editor shows the modulated output. Bind{' '}
+                    {tr.target.kind === 'ch' ? `/ch/${tr.target.n}` : '/cc'} in your OSC software
+                    (learn mode).
                   </p>
                 </>
               )}
@@ -516,8 +517,8 @@ export default function Inspector() {
               </Show>
             </div>
             <p class="text-[9px] leading-relaxed text-zinc-500">
-              UDP packets leave from wherever this app&apos;s server runs. To drive SlopShady on
-              your own machine, run SlopMotion locally (see Help ▸ Run locally).
+              UDP packets leave from wherever this app&apos;s server runs. To drive software on
+              another machine, run SlopMotion locally (see Help ▸ Run locally).
             </p>
           </div>
         </Show>

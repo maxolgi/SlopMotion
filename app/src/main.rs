@@ -15,7 +15,7 @@ use clap::Parser;
 #[derive(Parser, Clone)]
 #[command(
     name = "slopmotion",
-    about = "slopmotion — OSC modulator streaming to a shader app over UDP"
+    about = "slopmotion — OSC animation streaming over UDP"
 )]
 pub struct Cli {
     #[arg(short, long, default_value = "3000")]

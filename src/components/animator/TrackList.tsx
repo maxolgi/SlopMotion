@@ -273,8 +273,8 @@ export default function TrackList() {
                       {learning() === tr.id ? '■ Stop Learn pulse' : '◉ Learn — pulse this address'}
                     </button>
                     <p class="mt-1 text-[9px] leading-snug text-zinc-500">
-                      Pulses 0→1 on {addrLabel(tr)} for 15 s. Open OSC-Learn in SlopShady and click a
-                      destination to bind it.
+                      Pulses 0→1 on {addrLabel(tr)} for 15 s. Use your OSC software&apos;s learn
+                      mode to bind it to a destination.
                     </p>
                   </div>
                 </Show>

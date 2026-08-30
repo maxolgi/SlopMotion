@@ -75,7 +75,7 @@ export default function PerformView() {
             <p>
               <span class="text-zinc-300">Actions inside each clip</span> fire on launch: seek
               the timeline, trigger a track envelope, flash a value, or send a MIDI-style note to
-              SlopShady&apos;s voice system. Rename clips inline; edit actions in{' '}
+              the target application&apos;s voice/note system. Rename clips inline; edit actions in{' '}
               <span class="font-mono">clips.json</span> export or duplicate this project.
             </p>
             <p>

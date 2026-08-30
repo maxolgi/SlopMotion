@@ -14,7 +14,7 @@ export default function App() {
     <Router
       root={(props) => (
         <MetaProvider>
-          <Title>SlopMotion — OSC Animator for SlopShady</Title>
+          <Title>SlopMotion — OSC Animator</Title>
           <Suspense>{props.children}</Suspense>
           <Toaster theme="dark" position="bottom-center" richColors />
         </MetaProvider>

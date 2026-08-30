@@ -40,12 +40,12 @@ export function mkTrack(
   }
 }
 
-// ─── Demo project (SlopShady default mapping) ─────────────────────────────────
+// ─── Demo project (default mapping) ───────────────────────────────────────────
 
 export function demoProject(): Project {
   return {
     version: 1,
-    name: 'SlopShady Demo',
+    name: 'Demo Project',
     fps: 30,
     bpm: 120,
     duration: 16,
@@ -99,7 +99,7 @@ export function demoProject(): Project {
         k(0, 0, 'linear'),
         k(16, 1, 'linear'),
       ], { min: -1, max: 1 }),
-      mkTrack('tr_cd0', 'Code Dial cd0', 8, [
+      mkTrack('tr_cd0', 'Stepped Dial', 8, [
         k(0, 0, 'stepped'),
         k(2, 0.3, 'stepped'),
         k(4, 0.3, 'stepped'),
@@ -167,10 +167,10 @@ export function demoProject(): Project {
       },
     ],
     knobs: [
-      { id: 'kn1', label: 'cd1', address: '/ch/9', min: 0, max: 1, value: 0.5, reset: 0.5 },
-      { id: 'kn2', label: 'cd2', address: '/ch/10', min: 0, max: 1, value: 0.5, reset: 0.5 },
-      { id: 'kn3', label: 'cd3', address: '/ch/11', min: 0, max: 1, value: 0.3, reset: 0.3 },
-      { id: 'kn4', label: 'cd4', address: '/ch/12', min: 0, max: 1, value: 0.4, reset: 0.4 },
+      { id: 'kn1', label: 'Dial 1', address: '/ch/9', min: 0, max: 1, value: 0.5, reset: 0.5 },
+      { id: 'kn2', label: 'Dial 2', address: '/ch/10', min: 0, max: 1, value: 0.5, reset: 0.5 },
+      { id: 'kn3', label: 'Dial 3', address: '/ch/11', min: 0, max: 1, value: 0.3, reset: 0.3 },
+      { id: 'kn4', label: 'Dial 4', address: '/ch/12', min: 0, max: 1, value: 0.4, reset: 0.4 },
       { id: 'kn5', label: 'Feedback', address: '/ch/13', min: 0, max: 1, value: 0.2, reset: 0.2 },
       { id: 'kn6', label: 'Spread', address: '/ch/16', min: 0, max: 1, value: 0.5, reset: 0.5 },
     ],

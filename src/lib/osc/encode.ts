@@ -68,7 +68,7 @@ export function encodePacket(messages: OscMessage[], bundle: boolean): Uint8Arra
   return messages.map((m) => encodeMessage(m))
 }
 
-// ─── SlopShady helpers ────────────────────────────────────────────────────────
+// ─── Message helpers ──────────────────────────────────────────────────────────
 
 export function chMessage(n: number, v01: number): OscMessage {
   return { address: `/ch/${Math.round(n)}`, args: [{ type: 'f', value: v01 }] }

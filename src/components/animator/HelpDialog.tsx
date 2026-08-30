@@ -32,11 +32,8 @@ const SHORTCUTS: [string, string][] = [
 const OSC_TABLE: [string, string, string][] = [
   ['/ch/{n}', 'float 0..1', 'Generic continuous source — main animation target'],
   ['/cc', 'int ch, cc, val', 'MIDI CC (0–127)'],
-  ['/noteon', 'int ch, note, vel', 'Note-on into the voice system'],
+  ['/noteon', 'int ch, note, vel', 'Note-on into the voice/note system'],
   ['/noteoff', 'int ch, note', 'Note-off'],
-  ['/note/{ch}', 'v/oct, vel?', 'V/Oct pitch (0 V = C4)'],
-  ['/pitchbend', 'ch, −1..1', 'Pitch bend'],
-  ['/channelpressure', 'ch, 0..127', 'Aftertouch'],
 ]
 
 export default function HelpDialog(props: { open: boolean; onClose: () => void }) {
@@ -44,10 +41,10 @@ export default function HelpDialog(props: { open: boolean; onClose: () => void }
     <Dialog open={props.open} onOpenChange={(v) => !v && props.onClose()}>
       <DialogContent class="max-h-[85vh] max-w-2xl overflow-y-auto border-white/10 bg-[#14141f] text-zinc-200">
         <DialogHeader>
-          <DialogTitle class="text-white">SlopMotion — driving SlopShady over OSC</DialogTitle>
+          <DialogTitle class="text-white">SlopMotion — OSC animation</DialogTitle>
           <DialogDescription class="text-zinc-400">
-            A keyframe timeline + graph editor that streams OSC to SlopShady&apos;s UDP bridge
-            (default 127.0.0.1:8101).
+            A keyframe timeline + graph editor that streams OSC over UDP (default 127.0.0.1:8101)
+            to any OSC receiver.
           </DialogDescription>
         </DialogHeader>
 
@@ -58,9 +55,9 @@ export default function HelpDialog(props: { open: boolean; onClose: () => void }
             </h3>
             <ol class="list-decimal space-y-1 pl-5 text-zinc-300">
               <li>
-                In SlopShady open the modulation matrix, set OSC port 8101, and use OSC-Learn to
-                bind <code class="rounded bg-black/50 px-1 font-mono text-[11px]">/ch/1…N</code>{' '}
-                to destinations (code dials, transforms, brightness…).
+                In your OSC software, enable OSC learning/assignment and bind{' '}
+                <code class="rounded bg-black/50 px-1 font-mono text-[11px]">/ch/1…N</code>{' '}
+                to the parameters you want to animate (code dials, transforms, brightness…).
               </li>
               <li>
                 Here: map each track to a <code class="font-mono">/ch/n</code> (track ▸ ⌄ ▸ OSC
@@ -79,11 +76,11 @@ export default function HelpDialog(props: { open: boolean; onClose: () => void }
 
           <section>
             <h3 class="mb-1.5 font-mono text-[10px] uppercase tracking-wider text-cyan-300">
-              Run locally against SlopShady
+              Run locally
             </h3>
             <p class="mb-1.5 text-zinc-300">
               The browser can&apos;t send raw UDP, so packets leave from this app&apos;s server
-              process. To drive SlopShady on your machine, run SlopMotion next to it:
+              process. To drive OSC software on your machine, run SlopMotion next to it:
             </p>
             <pre class="overflow-x-auto rounded-lg border border-white/10 bg-black/60 p-3 font-mono text-[11px] text-emerald-300">
 {`# run the desktop app (GUI control panel)
@@ -101,7 +98,7 @@ npm run dev`}
 
           <section>
             <h3 class="mb-1.5 font-mono text-[10px] uppercase tracking-wider text-cyan-300">
-              SlopShady OSC addresses
+              OSC addresses
             </h3>
             <div class="overflow-hidden rounded-lg border border-white/10">
               <table class="w-full text-left font-mono text-[10.5px]">
