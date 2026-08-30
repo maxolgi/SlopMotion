@@ -930,27 +930,6 @@ export default function CurveEditor() {
       const mod = e.ctrlKey || e.metaKey
       if (e.code === 'Space') {
         space = true
-        e.preventDefault()
-        return
-      }
-      if (mod && e.key.toLowerCase() === 'z') {
-        e.preventDefault()
-        if (e.shiftKey) actions.redo()
-        else actions.undo()
-        return
-      }
-      if (mod && e.key.toLowerCase() === 'y') {
-        e.preventDefault()
-        actions.redo()
-        return
-      }
-      if (mod && e.key.toLowerCase() === 'c') {
-        actions.copySelection()
-        return
-      }
-      if (mod && e.key.toLowerCase() === 'v') {
-        actions.pasteAtPlayhead()
-        return
       }
       switch (e.key) {
         case 'k':
@@ -963,11 +942,6 @@ export default function CurveEditor() {
           for (const tid of ids) actions.addKeyAtTime(tid, engine.time)
           break
         }
-        case 'Delete':
-        case 'Backspace':
-          e.preventDefault()
-          actions.deleteSelectedKeys()
-          break
         case 'f':
         case 'F':
           e.preventDefault()
@@ -1053,20 +1027,11 @@ export default function CurveEditor() {
     const onKeyUp = (e: KeyboardEvent) => {
       if (e.code === 'Space') space = false
     }
-    const onSpacePlay = (e: KeyboardEvent) => {
-      if (isTyping(e.target)) return
-      if (e.code === 'Space') {
-        e.preventDefault()
-        engine.toggle()
-      }
-    }
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyUp)
-    window.addEventListener('keydown', onSpacePlay)
     onCleanup(() => {
       window.removeEventListener('keydown', onKeyDown)
       window.removeEventListener('keyup', onKeyUp)
-      window.removeEventListener('keydown', onSpacePlay)
     })
   })
 

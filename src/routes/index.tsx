@@ -6,6 +6,7 @@ import HelpDialog from '@/components/animator/HelpDialog'
 import CurveEditor from '@/components/animator/CurveEditor'
 import PerformView from '@/components/animator/PerformView'
 import { actions, store } from '@/store/useAnimator'
+import { useGlobalKeys } from '@/lib/useGlobalKeys'
 import { PanelLeft, PanelRight } from 'lucide-solid'
 
 export default function Home() {
@@ -13,6 +14,8 @@ export default function Home() {
   const [help, setHelp] = createSignal(false)
   const [leftOpen, setLeftOpen] = createSignal(true)
   const [rightOpen, setRightOpen] = createSignal(true)
+
+  useGlobalKeys()
 
   onMount(() => {
     actions.hydrate()
