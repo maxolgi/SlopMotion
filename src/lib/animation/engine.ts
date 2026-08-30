@@ -45,7 +45,7 @@ export interface EngineStats {
 export interface TrackEval {
   base: number
   final: number
-  arg: number // 0..1 OSC value
+  arg: number // OSC value: curve output scaled onto the track's min..max range
 }
 
 type ProjectGetter = () => {
@@ -176,8 +176,12 @@ class AnimationEngine {
     }
     const ev = this.envLevel(track, now)
     if (track.env.enabled && ev > 0) out = applyEnv(out, track.env, ev)
-    const span = Math.max(1e-9, track.max - track.min)
-    const arg = clamp((out - track.min) / span, 0, 1)
+    const span = track.max - track.min
+    const arg = clamp(
+      track.min + out * span,
+      Math.min(track.min, track.max),
+      Math.max(track.min, track.max)
+    )
     return { base: base0, final: out, arg }
   }
 
