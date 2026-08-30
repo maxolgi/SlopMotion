@@ -19,7 +19,8 @@ function encodeString(str: string): number[] {
   const bytes: number[] = []
   for (let i = 0; i < str.length; i++) bytes.push(str.charCodeAt(i) & 0xff)
   bytes.push(0)
-  for (let i = 0; i < pad4(bytes.length); i++) bytes.push(0)
+  const pad = pad4(bytes.length)
+  for (let i = 0; i < pad; i++) bytes.push(0)
   return bytes
 }
 

@@ -16,9 +16,9 @@ describe('encodeMessage', () => {
   it('encodes a float message byte-exact', () => {
     const out = encodeMessage({ address: '/ch/1', args: [{ type: 'f', value: 0.5 }] })
     expect(out).toEqual(
-      new Uint8Array([47, 99, 104, 47, 49, 0, 0, 44, 102, 0, 0, 63, 0, 0, 0]),
+      new Uint8Array([47, 99, 104, 47, 49, 0, 0, 0, 44, 102, 0, 0, 63, 0, 0, 0]),
     )
-    expect(out.length).toBe(15)
+    expect(out.length).toBe(16)
   })
 
   it('encodes an int arg big-endian', () => {
@@ -33,7 +33,7 @@ describe('encodeMessage', () => {
 
   it('pads a string arg to a multiple of 4', () => {
     const out = encodeMessage({ address: '/ch/1', args: [{ type: 's', value: 'ab' }] })
-    expect(Array.from(out)).toEqual([47, 99, 104, 47, 49, 0, 0, 44, 115, 0, 0, 97, 98, 0, 0])
+    expect(Array.from(out)).toEqual([47, 99, 104, 47, 49, 0, 0, 0, 44, 115, 0, 0, 97, 98, 0, 0])
   })
 
   it('encodes a multi-arg ifs message', () => {
@@ -46,9 +46,9 @@ describe('encodeMessage', () => {
       ],
     })
     expect(Array.from(out)).toEqual([
-      47, 109, 0, 0, 44, 105, 102, 115, 0, 0, 0, 0, 0, 0, 7, 64, 32, 0, 0, 104, 105, 0, 0,
+      47, 109, 0, 0, 44, 105, 102, 115, 0, 0, 0, 0, 0, 0, 0, 7, 64, 32, 0, 0, 104, 105, 0, 0,
     ])
-    expect(out.length).toBe(23)
+    expect(out.length).toBe(24)
   })
 
   it('prepends a leading slash when missing', () => {
@@ -96,10 +96,10 @@ describe('encodePacket', () => {
     expect(out[1]).toEqual(encodeMessage(m2))
   })
 
-  it('under-pads strings needing two or more NULs, breaking 4-byte alignment', () => {
-    expect(encodeMessage(m1).length).toBe(15)
-    expect(encodeMessage(m2).length % 4).toBe(3)
-    expect(encodeBundle([m1, m2]).length % 4).toBe(2)
+  it('pads strings to preserve 4-byte alignment', () => {
+    expect(encodeMessage(m1).length).toBe(16)
+    expect(encodeMessage(m2).length % 4).toBe(0)
+    expect(encodeBundle([m1, m2]).length % 4).toBe(0)
   })
 })
 
