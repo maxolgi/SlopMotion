@@ -73,6 +73,10 @@ export function chMessage(n: number, v01: number): OscMessage {
   return { address: `/ch/${Math.round(n)}`, args: [{ type: 'f', value: v01 }] }
 }
 
+export function addrMessage(addr: string, value: number): OscMessage {
+  return { address: addr.startsWith('/') ? addr : `/${addr}`, args: [{ type: 'f', value }] }
+}
+
 export function ccMessage(ch: number, cc: number, val: number): OscMessage {
   return {
     address: '/cc',

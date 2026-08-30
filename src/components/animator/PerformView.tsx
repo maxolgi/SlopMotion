@@ -3,7 +3,7 @@ import Knob from './Knob'
 import XYPad from './XYPad'
 import { store, getState, actions } from '@/store/useAnimator'
 import { engine } from '@/lib/animation/engine'
-import { chMessage } from '@/lib/osc/encode'
+import { addrMessage } from '@/lib/osc/encode'
 import type { Clip } from '@/lib/animation/types'
 
 // ─── Performance view: clip launcher + knobs + XY pad ────────────────────────
@@ -103,13 +103,11 @@ export default function PerformView() {
                     color={['#22d3ee', '#e879f9', '#fbbf24', '#34d399', '#a78bfa', '#fb7185', '#a3e635', '#fb923c'][i() % 8]}
                     onChange={(v) => {
                       actions.setKnobProp(kn.id, { value: v })
-                      const m = kn.address.match(/\/ch\/(\d+)/)
-                      if (m) void engine.sendImmediate([chMessage(Number(m[1]), v)])
+                      void engine.sendImmediate([addrMessage(kn.address, v)])
                     }}
                     onReset={() => {
                       actions.setKnobProp(kn.id, { value: kn.reset })
-                      const m = kn.address.match(/\/ch\/(\d+)/)
-                      if (m) void engine.sendImmediate([chMessage(Number(m[1]), kn.reset)])
+                      void engine.sendImmediate([addrMessage(kn.address, kn.reset)])
                     }}
                   />
                 )}

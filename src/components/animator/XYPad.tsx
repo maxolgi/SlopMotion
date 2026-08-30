@@ -1,9 +1,9 @@
 import { createSignal, onCleanup, onMount } from 'solid-js'
-import { chMessage } from '@/lib/osc/encode'
+import { addrMessage } from '@/lib/osc/encode'
 import { engine } from '@/lib/animation/engine'
 import { store, actions } from '@/store/useAnimator'
 
-// ─── XY Pad: sends two /ch addresses live ─────────────────────────────────────
+// ─── XY Pad: sends two OSC addresses live ────────────────────────────────────
 
 export default function XYPad() {
   const [pos, setPos] = createSignal({ x: 0.5, y: 0.5 })
@@ -20,7 +20,7 @@ export default function XYPad() {
           lastSend = now
           const p = pos()
           const xy = store.project.xy
-          void engine.sendImmediate([chMessage(atoi(xy.addrX), p.x), chMessage(atoi(xy.addrY), p.y)])
+          void engine.sendImmediate([addrMessage(xy.addrX, p.x), addrMessage(xy.addrY, p.y)])
         }
       }
       raf = requestAnimationFrame(loop)
@@ -98,9 +98,4 @@ export default function XYPad() {
       </div>
     </div>
   )
-}
-
-function atoi(addr: string): number {
-  const m = addr.match(/\/ch\/(\d+)/)
-  return m ? Number(m[1]) : 1
 }
