@@ -211,3 +211,109 @@ pub async fn send_batch(
     MESSAGES_SENT.fetch_add(messages.len() as u64, Ordering::Relaxed);
     Ok(sent)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    fn msg(addr: &str) -> OscMessage {
+        osc_message(&WireMessage {
+            address: json!(addr),
+            args: vec![],
+        })
+    }
+
+    #[test]
+    fn payload_defaults_on_empty_object() {
+        let p = Payload::from_value(&json!({}));
+        assert_eq!(p.host, "127.0.0.1");
+        assert_eq!(p.port, 8101);
+        assert!(p.bundle);
+        assert!(p.messages.is_empty());
+    }
+
+    #[test]
+    fn payload_bundle_false_respected() {
+        let p = Payload::from_value(&json!({ "bundle": false }));
+        assert!(!p.bundle);
+    }
+
+    #[test]
+    fn payload_port_coercion() {
+        assert_eq!(Payload::from_value(&json!({ "port": "9000" })).port, 9000);
+        assert_eq!(Payload::from_value(&json!({ "port": 0 })).port, 8101);
+        assert_eq!(Payload::from_value(&json!({ "port": "abc" })).port, 8101);
+    }
+
+    #[test]
+    fn payload_messages_capped_at_128() {
+        let messages: Vec<_> = (0..200).map(|_| json!({ "address": "/ch" })).collect();
+        let p = Payload::from_value(&json!({ "messages": messages }));
+        assert_eq!(p.messages.len(), 128);
+    }
+
+    #[test]
+    fn osc_arg_coercion() {
+        let arg = |kind: Value, value: Value| osc_arg(&WireArg { kind, value });
+        assert_eq!(arg(json!("i"), json!(1.6)), OscType::Int(2));
+        assert_eq!(arg(json!("s"), json!(5)), OscType::String("5".to_string()));
+        assert_eq!(arg(json!("f"), json!(2.5)), OscType::Float(2.5));
+        assert_eq!(arg(Value::Null, json!(2.5)), OscType::Float(2.5));
+        assert_eq!(arg(json!("i"), json!("7")), OscType::Int(7));
+    }
+
+    #[test]
+    fn osc_message_prepends_slash() {
+        let m = osc_message(&WireMessage {
+            address: json!("ch/1"),
+            args: vec![],
+        });
+        assert_eq!(m.addr, "/ch/1");
+        let m = osc_message(&WireMessage {
+            address: json!("/ch/1"),
+            args: vec![],
+        });
+        assert_eq!(m.addr, "/ch/1");
+    }
+
+    #[test]
+    fn encode_packets_single_message_is_not_bundle() {
+        let packets = encode_packets(true, &[msg("/ch/1")]);
+        assert_eq!(packets.len(), 1);
+        assert!(!packets[0].starts_with(b"#bundle"));
+        assert_eq!(packets[0].len() % 4, 0);
+    }
+
+    #[test]
+    fn encode_packets_bundles_multiple_messages() {
+        let packets = encode_packets(true, &[msg("/ch/1"), msg("/ch/2")]);
+        assert_eq!(packets.len(), 1);
+        assert!(packets[0].starts_with(b"#bundle"));
+        assert_eq!(&packets[0][8..16], &[0, 0, 0, 0, 0, 0, 0, 1]);
+        assert_eq!(packets[0].len() % 4, 0);
+    }
+
+    #[test]
+    fn encode_packets_without_bundle_one_per_message() {
+        let packets = encode_packets(false, &[msg("/ch/1"), msg("/ch/2")]);
+        assert_eq!(packets.len(), 2);
+        for p in &packets {
+            assert_eq!(p.len() % 4, 0);
+        }
+    }
+
+    #[test]
+    fn encoded_single_message_bytes() {
+        let m = osc_message(&WireMessage {
+            address: json!("/ch/1"),
+            args: vec![WireArg {
+                kind: json!("f"),
+                value: json!(0.5),
+            }],
+        });
+        let packets = encode_packets(false, &[m]);
+        assert_eq!(packets.len(), 1);
+        assert_eq!(packets[0], b"/ch/1\0\0\0,f\0\0\x3f\x00\x00\x00");
+    }
+}
