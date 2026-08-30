@@ -16,6 +16,14 @@ async fn handle_socket(socket: WebSocket) {
             _ => continue,
         };
 
+        // Bare-text keepalive from clients that don't send the JSON form.
+        if text.trim() == "ping" {
+            if sender.send(Message::Text("pong".into())).await.is_err() {
+                return;
+            }
+            continue;
+        }
+
         // A malformed message must never kill the socket.
         let parsed: Value = match serde_json::from_str(&text.to_string()) {
             Ok(v) => v,

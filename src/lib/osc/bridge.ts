@@ -6,8 +6,9 @@
 //   flushed in order on open) AND the POST fallback fires, so the very first
 //   sends never stall; once the socket is open, sends go over WS only — no
 //   double-sending.
-// Fire-and-forget: no acks. The server answers "pong" to "ping"; we ping every
-// 30s to keep the socket warm and otherwise rely on reconnect-on-close.
+// Fire-and-forget: no acks. The server answers "pong" to {"type":"ping"}; we
+// ping every 30s to keep the socket warm and otherwise rely on
+// reconnect-on-close.
 
 import type { OscMessage } from '@/lib/osc/encode'
 
@@ -62,7 +63,7 @@ function ensureSocket() {
     wasOpen = true
     for (const payload of queue) socket.send(JSON.stringify({ type: 'osc', ...payload }))
     queue = []
-    pingTimer = setInterval(() => socket.send('ping'), PING_INTERVAL)
+    pingTimer = setInterval(() => socket.send(JSON.stringify({ type: 'ping' })), PING_INTERVAL)
   }
   socket.onclose = () => {
     if (pingTimer !== null) clearInterval(pingTimer)
