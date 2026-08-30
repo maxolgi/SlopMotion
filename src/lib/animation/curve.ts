@@ -95,10 +95,14 @@ export function evalCurve(keys: Keyframe[], t: number): number {
   if (t >= ks[ks.length - 1].t) return ks[ks.length - 1].v
 
   // find segment i: ks[i].t <= t < ks[i+1].t
-  let i = 0
-  for (let j = 0; j < ks.length - 1; j++) {
-    if (t >= ks[j].t) i = j
+  let lo = 0
+  let hi = ks.length - 2
+  while (lo < hi) {
+    const mid = (lo + hi + 1) >> 1
+    if (t >= ks[mid].t) lo = mid
+    else hi = mid - 1
   }
+  const i = lo
   const k0 = ks[i]
   const k1 = ks[i + 1]
 
