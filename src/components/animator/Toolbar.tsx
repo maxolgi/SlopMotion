@@ -209,7 +209,7 @@ export default function Toolbar(props: {
         <button
           class="rounded border border-white/10 p-1.5 text-zinc-400 hover:bg-white/10"
           onClick={() => {
-            actions.persist()
+            actions.persistNow()
             toast.success('Saved to this browser')
           }}
           title="Save to browser storage"

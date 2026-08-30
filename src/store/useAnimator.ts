@@ -59,13 +59,25 @@ const hydrate = () => {
   }
 }
 
-const persist = () => {
+let persistTimer: number | undefined
+
+const persistNow = () => {
+  if (typeof window !== 'undefined') window.clearTimeout(persistTimer)
+  persistTimer = undefined
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(store.project))
   } catch {
     /* quota — ignore */
   }
 }
+
+const persist = () => {
+  if (typeof window === 'undefined') return
+  window.clearTimeout(persistTimer)
+  persistTimer = window.setTimeout(persistNow, 400)
+}
+
+if (typeof window !== 'undefined') window.addEventListener('pagehide', persistNow)
 
 const commit = () => {
   const raw = unwrap(store)
@@ -83,7 +95,7 @@ const undo = () => {
     past: past.slice(0, -1),
     future: [snapshot, ...future.slice(0, 99)],
   })
-  persist()
+  persistNow()
 }
 
 const redo = () => {
@@ -97,7 +109,7 @@ const redo = () => {
     past: [...past, snapshot],
     future: future.slice(1),
   })
-  persist()
+  persistNow()
 }
 
 const mutate = (recipe: (p: Project) => void, undoable = true) => {
@@ -114,13 +126,13 @@ const setProjectProp = (patch: Partial<Pick<Project, 'name' | 'fps' | 'bpm' | 'd
 const loadProject = (p: Project) => {
   commit()
   setState({ project: p, selection: emptySelection() })
-  persist()
+  persistNow()
 }
 
 const resetDemo = () => {
   commit()
   setState({ project: demoProject(), selection: emptySelection() })
-  persist()
+  persistNow()
 }
 
 const addTrack = () =>
@@ -204,8 +216,6 @@ const setKeys = (trackId: string, keys: Keyframe[]) =>
 /** non-undoable, persist-free key update used during drags */
 const setKeysLive = (trackId: string, keys: Keyframe[]) =>
   setState('project', 'tracks', (t) => t.id === trackId, 'keys', sortKeys(keys))
-
-const persistNow = () => persist()
 
 const addKeyAtTime = (trackId: string, t: number, v?: number) =>
   mutate((p) => {
