@@ -150,14 +150,14 @@ static MESSAGES_SENT: AtomicU64 = AtomicU64::new(0);
 static ERRORS: AtomicU64 = AtomicU64::new(0);
 
 /// Cumulative counters shown by the GUI.
-#[allow(dead_code)] // consumed by gui.rs once the GUI agent fills it in
 pub struct Stats {
+    // gui.rs only surfaces messages_sent/errors today; kept for completeness.
+    #[allow(dead_code)]
     pub packets_sent: u64,
     pub messages_sent: u64,
     pub errors: u64,
 }
 
-#[allow(dead_code)]
 pub fn stats() -> Stats {
     Stats {
         packets_sent: PACKETS_SENT.load(Ordering::Relaxed),

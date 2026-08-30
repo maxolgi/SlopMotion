@@ -15,7 +15,7 @@ import type { Clip, Track } from './types'
 
 // ─── Animation engine (module singleton) ─────────────────────────────────────
 // Owns the transport clock, the evaluation pipeline and the throttled OSC
-// dispatch. Structural state (tracks, keys…) lives in the zustand store; the
+// dispatch. Structural state (tracks, keys…) lives in the Solid store; the
 // engine pulls it through the accessor registered at boot to avoid cycles.
 
 interface EnvTrigger {
