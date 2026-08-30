@@ -151,8 +151,6 @@ static ERRORS: AtomicU64 = AtomicU64::new(0);
 
 /// Cumulative counters shown by the GUI.
 pub struct Stats {
-    // gui.rs only surfaces messages_sent/errors today; kept for completeness.
-    #[allow(dead_code)]
     pub packets_sent: u64,
     pub messages_sent: u64,
     pub errors: u64,

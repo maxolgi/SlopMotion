@@ -251,8 +251,8 @@ impl eframe::App for ControlPanel {
             if self.running {
                 ui.label(format!("Running at {}", self.url));
                 ui.label(format!(
-                    "OSC: {} msgs sent · {} err",
-                    self.stats.messages_sent, self.stats.errors
+                    "OSC: {} msgs · {} pkts · {} err",
+                    self.stats.messages_sent, self.stats.packets_sent, self.stats.errors
                 ));
                 ui.add_space(8.0);
                 ui.horizontal(|ui| {
