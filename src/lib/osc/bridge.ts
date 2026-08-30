@@ -5,7 +5,8 @@
 //   the socket is not open, payloads are enqueued (cap 64, oldest dropped,
 //   flushed in order on open) AND the POST fallback fires, so the very first
 //   sends never stall; once the socket is open, sends go over WS only — no
-//   double-sending.
+//   double-sending. Imperative sends (immediate flag) skip the queue: while
+//   the socket is not open they POST only, so they fire exactly once.
 // Fire-and-forget: no acks. The server answers "pong" to {"type":"ping"}; we
 // ping every 30s to keep the socket warm and otherwise rely on
 // reconnect-on-close.
@@ -82,7 +83,7 @@ function ensureSocket() {
   socket.onerror = () => {}
 }
 
-export function sendOsc(payload: OscPayload): void {
+export function sendOsc(payload: OscPayload, immediate = false): void {
   if (import.meta.env.DEV) {
     postFallback(payload)
     return
@@ -90,6 +91,10 @@ export function sendOsc(payload: OscPayload): void {
   ensureSocket()
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'osc', ...payload }))
+    return
+  }
+  if (immediate) {
+    postFallback(payload)
     return
   }
   queue.push(payload)

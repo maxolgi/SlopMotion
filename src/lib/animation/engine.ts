@@ -238,7 +238,7 @@ class AnimationEngine {
     if (!live || !armed) return
     // Fire-and-forget transport: WS sends count as success immediately; the
     // POST fallback and WS disconnects report errors through the bridge hook.
-    sendOsc({ host, port, bundle: false, messages })
+    sendOsc({ host, port, bundle: false, messages }, true)
     this.stats.sent += messages.length
     this.stats.lastSendAt = performance.now()
     this.stats.lastError = null
