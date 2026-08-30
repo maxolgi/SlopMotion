@@ -1,4 +1,5 @@
 import { onCleanup, onMount, createSignal } from 'solid-js'
+import { Pause, Play, Repeat, SkipBack } from 'lucide-solid'
 import { engine } from '@/lib/animation/engine'
 import { getState } from '@/store/useAnimator'
 
@@ -34,14 +35,14 @@ export default function TransportBar() {
   return (
     <div class="flex items-center gap-1.5">
       <button
-        class="rounded border border-white/10 bg-white/5 p-1.5 text-zinc-300 hover:bg-white/10"
+        class="grid h-7 w-7 place-items-center rounded border border-white/10 bg-white/5 p-0 text-zinc-300 hover:bg-white/10"
         onClick={() => engine.seek(0)}
         title="Return to start (Home)"
       >
-        ⏮
+        <SkipBack size={14} />
       </button>
       <button
-        class={`rounded border p-1.5 ${
+        class={`grid h-7 w-7 place-items-center rounded border p-0 ${
           playing()
             ? 'border-cyan-400/60 bg-cyan-400/20 text-cyan-300'
             : 'border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10'
@@ -52,10 +53,10 @@ export default function TransportBar() {
         }}
         title="Play / Pause (Space)"
       >
-        {playing() ? '⏸' : '▶'}
+        {playing() ? <Pause size={14} /> : <Play size={14} />}
       </button>
       <button
-        class={`rounded border p-1.5 text-[11px] ${
+        class={`grid h-7 w-7 place-items-center rounded border p-0 ${
           loop()
             ? 'border-fuchsia-400/60 bg-fuchsia-400/20 text-fuchsia-300'
             : 'border-white/10 bg-white/5 text-zinc-500 hover:bg-white/10'
@@ -66,7 +67,7 @@ export default function TransportBar() {
         }}
         title="Loop (L)"
       >
-        ⟲
+        <Repeat size={14} />
       </button>
       <div class="ml-1 rounded border border-white/10 bg-black/40 px-2.5 py-1 font-mono text-[12px] tabular-nums">
         <span ref={timeRef} class="text-cyan-300">
