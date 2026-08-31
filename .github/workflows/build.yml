@@ -1,0 +1,203 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 1. Fast checks on every push / PR: JS tests + typecheck, Rust fmt/clippy/test.
+  #    fmt + clippy are advisory (no rustfmt.toml / clippy config in-repo).
+  # ---------------------------------------------------------------------------
+  check:
+    name: Test + typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app
+
+      - name: Install Linux build deps (eframe/egui needs EGL/X11/Wayland headers)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libegl-dev libgl1-mesa-dev \
+            libxcb1-dev libxrandr-dev libxinerama-dev \
+            libxcursor-dev libxi-dev libxxf86vm-dev \
+            libwayland-dev libxkbcommon-dev
+
+      - name: cargo fmt --check
+        working-directory: app
+        continue-on-error: true
+        run: cargo fmt --all -- --check
+
+      - name: cargo clippy
+        working-directory: app
+        continue-on-error: true
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: cargo test
+        working-directory: app
+        run: cargo test --all-targets
+
+      - name: vitest
+        run: npm test
+
+      - name: tsc typecheck
+        run: npm run typecheck
+
+  # ---------------------------------------------------------------------------
+  # 2. Full build — Linux, Windows, macOS (ARM).
+  #    rust-embed embeds .output/public/ at compile time in release builds,
+  #    so npm run build must precede cargo build.
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux x64
+            os: ubuntu-latest
+            binary: slopmotion
+            artifact: slopmotion-linux-x64
+            staged: slopmotion-linux-x64
+          - name: Windows x64
+            os: windows-latest
+            binary: slopmotion.exe
+            artifact: slopmotion-windows-x64
+            staged: slopmotion-windows-x64.exe
+          - name: macOS ARM
+            os: macos-latest
+            binary: slopmotion
+            artifact: slopmotion-macos-arm64
+            staged: slopmotion-macos-arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Install Linux build deps (eframe/egui needs EGL/X11/Wayland headers)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libegl-dev libgl1-mesa-dev \
+            libxcb1-dev libxrandr-dev libxinerama-dev \
+            libxcursor-dev libxi-dev libxxf86vm-dev \
+            libwayland-dev libxkbcommon-dev
+
+      - name: Build web app (embedded into the binary via rust-embed)
+        run: npm run build
+
+      - name: Build slopmotion binary
+        working-directory: app
+        run: cargo build --release
+
+      - name: Stage binary
+        shell: bash
+        run: |
+          mkdir -p artifact
+          cp "app/target/release/${{ matrix.binary }}" "artifact/${{ matrix.staged }}"
+          strip "artifact/${{ matrix.staged }}" || true
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.artifact }}
+          path: artifact/${{ matrix.staged }}
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # 3. Publish a GitHub Release for every successful build.
+  #    - Push to main  → prerelease tagged dev-<short_sha>
+  #    - v* tag push    → stable release tagged <version>, marked "latest"
+  # ---------------------------------------------------------------------------
+  release:
+    name: Publish release
+    needs: build
+    if: >-
+      github.event_name != 'pull_request' &&
+      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+
+      - name: Stage release assets
+        shell: bash
+        run: |
+          mkdir -p release
+          cp artifacts/slopmotion-linux-x64/* release/
+          cp artifacts/slopmotion-windows-x64/* release/
+          cp artifacts/slopmotion-macos-arm64/* release/
+
+      - name: Set release metadata
+        id: meta
+        env:
+          SHA: ${{ github.sha }}
+          REF: ${{ github.ref }}
+        run: |
+          short="${SHA:0:7}"
+          if [[ "$REF" == refs/tags/v* ]]; then
+            echo "tag=${REF#refs/tags/}"    >> "$GITHUB_OUTPUT"
+            echo "name=${REF#refs/tags/}"   >> "$GITHUB_OUTPUT"
+            echo "prerelease=false"         >> "$GITHUB_OUTPUT"
+            echo "make_latest=true"         >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=dev-${short}"         >> "$GITHUB_OUTPUT"
+            echo "name=Dev ${short}"        >> "$GITHUB_OUTPUT"
+            echo "prerelease=true"          >> "$GITHUB_OUTPUT"
+            echo "make_latest=false"        >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: ${{ steps.meta.outputs.name }}
+          prerelease: ${{ steps.meta.outputs.prerelease }}
+          make_latest: ${{ steps.meta.outputs.make_latest }}
+          files: release/*
+          generate_release_notes: true
+          fail_on_unmatched_files: true
