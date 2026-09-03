@@ -40,6 +40,9 @@ jobs:
 
       - run: npm ci
 
+      - name: Build web app (embedded into the binary via rust-embed)
+        run: npm run build
+
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: app
