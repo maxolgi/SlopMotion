@@ -24,7 +24,7 @@ function NumField(props: {
         step={props.step ?? 0.01}
         min={props.min}
         max={props.max}
-        value={Number.isFinite(props.value) ? props.value : 0}
+        value={Number.isFinite(props.value) ? +props.value.toFixed(4) : 0}
         onInput={(e) => props.onChange(Number(e.currentTarget.value))}
         class="w-full rounded border border-white/10 bg-black/40 px-2 py-1 font-mono text-[11px] text-zinc-100 outline-none focus:border-cyan-400/50"
       />
@@ -465,7 +465,7 @@ export default function Inspector() {
             </label>
             <label class="block">
               <span class="mb-1 flex justify-between font-mono text-[9px] uppercase tracking-wider text-zinc-500">
-                Send rate <span class="text-zinc-400">{store.project.osc.rate} Hz</span>
+                Send rate <span class="text-zinc-400">{+store.project.osc.rate.toFixed(4)} Hz</span>
               </span>
               <input
                 type="range"
