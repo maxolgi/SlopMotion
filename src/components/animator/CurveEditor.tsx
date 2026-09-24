@@ -662,11 +662,20 @@ export default function CurveEditor() {
         finalIds = selIds.includes(kk.id) ? selIds : [kk.id]
       }
       const trackIds = selection.trackIds.includes(tr.id) ? selection.trackIds : [...selection.trackIds.filter(() => e.shiftKey), tr.id]
-      actions.setSelection({ trackIds, keyIds: { ...selection.keyIds, [tr.id]: finalIds } })
+      // keep key selections only for tracks that stay selected — stale keyIds on
+      // unselected tracks made invisible points move during drags
+      const keyIds: Record<string, string[]> = {}
+      for (const tid of trackIds) {
+        if (tid === tr.id) continue
+        const ids = selection.keyIds[tid]
+        if (ids?.length) keyIds[tid] = ids
+      }
+      keyIds[tr.id] = finalIds
+      actions.setSelection({ trackIds, keyIds })
       // drag snapshot: all keys of tracks that have selection
       const snapshot: Record<string, Keyframe[]> = {}
       for (const t2 of project.tracks) {
-        const ids = t2.id === tr.id ? finalIds : selection.keyIds[t2.id] ?? []
+        const ids = t2.id === tr.id ? finalIds : keyIds[t2.id] ?? []
         if (ids.length > 0 || t2.id === tr.id) snapshot[t2.id] = t2.keys.map((x) => ({ ...x }))
       }
       ghost = Object.fromEntries(
