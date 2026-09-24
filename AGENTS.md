@@ -58,3 +58,38 @@ If you are not sure about something dont overthink it and use internet search
 ---
 Never edit above this line
 ---
+
+## Repo map
+
+- `src/` — SolidJS web app (SolidStart + vinxi, SPA mode: `ssr: false` in `app.config.ts`). Solid, not React: signals, not useState.
+- `app/` — Rust server (axum + rosc) that serves the built web app (rust-embed) and relays OSC over UDP. eframe GUI is a default cargo feature (`--no-gui` for headless).
+- Path alias `@/` → `src/` (both tsconfig and vite).
+
+## Commands
+
+```sh
+npm run dev        # vinxi dev server
+npm run test       # vitest (tests colocated as *.test.ts)
+npx vitest run src/lib/animation/curve.test.ts   # single file
+npm run typecheck  # tsc --noEmit
+
+# Desktop app — npm run build MUST come first:
+npm run build
+cargo test --all-targets                                  # workdir: app/
+cargo run --release --manifest-path app/Cargo.toml -- --open
+```
+
+Why the order matters: rust-embed compiles `.output/public/` into the binary, so `cargo build`/`cargo test` fail without it (CI does the same).
+
+CI (`.github/workflows/build.yml`): vitest + tsc + `cargo test` are blocking; `cargo fmt --check` and clippy are advisory only (continue-on-error). Linux GUI builds need EGL/X11/Wayland dev headers — see the workflow's apt list.
+
+## OSC transport rule (`src/lib/osc/bridge.ts`)
+
+Deterministic by design — read the header comment before touching it:
+- DEV always POSTs to `/api/osc/send` (vinxi route `src/routes/api/osc/send.ts`; the dev server has no `/ws`).
+- PROD uses the Rust-served WebSocket at `/ws`; until it opens, payloads queue (cap 64) and POST fallback fires. Once open, WS only — no double-sends. Immediate sends skip the queue.
+
+## Gotchas
+
+- Keep the `"h3": "1.15.11"` override in package.json.
+- Node ≥ 18 required (engines); CI uses Node 22.
